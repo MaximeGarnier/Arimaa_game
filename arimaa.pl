@@ -2,14 +2,17 @@
 
 board([[0,0,rabbit,silver],[0,1,rabbit,silver],[0,2,horse,silver],[0,3,rabbit,silver],[0,4,elephant,silver],[0,5,rabbit,silver],[0,6,rabbit,silver],[0,7,rabbit,silver],[1,0,camel,silver],[1,1,cat,silver],[1,2,rabbit,silver],[1,3,dog,silver],[1,4,rabbit,silver],[1,5,horse,silver],[1,6,dog,silver],[1,7,cat,silver],[2,7,rabbit,gold],[6,0,cat,gold],[6,1,horse,gold],[6,2,camel,gold],[6,3,elephant,gold],[6,4,rabbit,gold],[6,5,dog,gold],[6,6,rabbit,gold],[7,0,rabbit,gold],[7,1,rabbit,gold],[7,2,rabbit,gold],[7,3,cat,gold],[7,4,dog,gold],[7,5,rabbit,gold],[7,6,horse,gold],[7,7,rabbit,gold]]).
 
+%cases_plateau().
+
+
 %base fait force
 
 force(6,elephant).
-force(5,chameau).
-force(4,cheval).
-force(3,chien).
-force(2,chat).
-force(1,lapin).
+force(5,camel).
+force(4,horse).
+force(3,dog).
+force(2,cat).
+force(1,rabbit).
 
 
 
@@ -41,7 +44,8 @@ get_voisins(P,L):-setof(P2,proche(P,P2),L).
 
 
 piece_existante([X,Y]):-board(B), member([X,Y,_,_],B).
-couleur([X,Y],C):-board(B), member([X,Y,_,C],B).
+couleur([X,Y],C):-board(B), member([X,Y,_,C],B),!.
+type([X,Y],T):-board(B), member([X,Y,T,_],B),!.
 
 %piece_voisine
 
@@ -60,32 +64,49 @@ voisin_ennemi([X,Y]):-pieces_voisines([X,Y],L),member(P,L), couleur(P,C1),couleu
 voisin_ennemi([X,Y],P):-pieces_voisines([X,Y],L),member(P,L), couleur(P,C1),couleur([X,Y],C2), C1\=C2.
 voisins_ennemis([X,Y],L):-setof(Z,voisin_ennemi([X,Y],Z),L).
 
+voisin_ennemi_plus_fort(X):-voisin_ennemi(X,P), type(X,T1), type(P,T2), plus_fort(T2,T1).
+
 %empecher lapin reculer
 %faire boucle sur les coups possibles en retirant mouvement sup si lapin
 
-
-toutes_pieces(_):-setof(X,piece_existante(X),L), write(L).
-
-
-
-%silver
+coup_possible(P,CASE):- \+type(P,rabbit),get_voisins(P,L1), member(CASE,L1), \+piece_existante(CASE).
+coup_possible(P,CASE):-type(P,rabbit), sup(P,C), get_voisins(P,L1), member(CASE,L1), CASE\=C, \+piece_existante(CASE).
+coups_possibles(P,L):-setof(X,coup_possible(P,X),L).
 
 
+toutes_pieces(L):-setof(X,piece_existante(X),L).
+
+
+%gele
+
+gele(P):-piece_existante(P), \+voisin_allier(P,_), voisin_ennemi_plus_fort(P),!.
+
+%tomber
+cases_pieges([[2,2],[2,6],[6,2],[6,6]]).
+
+remove([X,Y],L):-board(B),delete(B,[X,Y,_,_],L).
+update_board(B,L).
 
 
 
 
-%prédicat piece, qui permet de savoir si une pièce se trouve en position [X,Y] dans l ensemble des pièces
-
-piece([X,Y],[[X,Y,_,_]|Q]).
-piece([X,Y],[_|Q]):-piece([X,Y],Q).
 
 
 
 
-%piece_proche (A REVOIR)
 
-piece_proche([X,Y,TYPE,COULEUR],[X1,Y1,TYPE1,COULEUR1]):-proche([X,Y],[X1,Y1]),piece([X,Y],board(B)), piece([X1,Y1],board(B)).
+
+
+%piece_non_existante([X,Y]):-board(B), \+member([X,Y,_,_],B).
+%toutes_cases_libres(L):-setof(X,piece_non_existante(X),L).
+
+
+
+%IA couleur=silver
+
+
+
+
 
 
 
