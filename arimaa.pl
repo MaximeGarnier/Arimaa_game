@@ -107,26 +107,23 @@ gele(P):-piece_existante(P), \+voisin_allier(P,_), voisin_ennemi_plus_fort(P),!.
 cases_pieges([[2,2],[2,6],[6,2],[6,6]]).
 tomber(X):-cases_pieges(L), member(X,L), \+voisin_allier(X),!.
 
+deplacement1(X,M1,[M1|L],B):-coup_possible(X,M1), remove(X,B,L).
+deplacement4(X,[M1,M2,M3,M4],NewB,B):- deplacement1(X,M1,L,B), deplacement1(M1,M2,L1,L),deplacement1(M2,M3,L2,L1), deplacement1(M3,M4,NewB,L2).
 
 
-remove([X,Y],L):-board(B),delete(B,[X,Y,_,_],L).
+remove([X,Y],B,NewBoard):-delete(B,[X,Y,_,_],NewBoard).
 %update_board(B,L).
 
 
 
+%Fonctions outils éventuellement utile
+concat([],L,L).
+concat([T|Q],L,[T|R]):-concat(Q,L,R).
 
 
-
-
-
-
-
-
-
-%piece_non_existante([X,Y]):-board(B), \+member([X,Y,_,_],B).
-%toutes_cases_libres(L):-setof(X,piece_non_existante(X),L).
-
-
+inter([], _, []).
+inter([H1|T1], L2, [H1|Res]) :- member(H1, L2),inter(T1, L2, Res).
+inter([_|T1], L2, Res) :- inter(T1, L2, Res).
 
 %IA couleur=silver
 
