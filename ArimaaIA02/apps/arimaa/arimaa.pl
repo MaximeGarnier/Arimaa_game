@@ -121,8 +121,8 @@ peut_tirer(X,Y):-peut_pousser_tirer(X,Y), droite(X,Y), droite(Z,X), case_vide(Z)
 
 %get_rabbits(Couleur, Board,L) : retourne les lapins d'une couleur dans L 
 get_rabbits(_,[],[]).
-get_rabbits(C,[[X,Y,rabbit,C]|Q],[[X,Y]|L]):-get_rabbit(C,Q,L),!.
-get_rabbits(C,[_|Q],L):- get_rabbit(C,Q,L).
+get_rabbits(C,[[X,Y,rabbit,C]|Q],[[X,Y]|L]):-get_rabbits(C,Q,L),!.
+get_rabbits(C,[_|Q],L):- get_rabbits(C,Q,L).
 
 %get_cats(Couleur, Board,L) : retourne les chats d'une couleur dans L 
 get_cats(_,[],[]).
@@ -158,8 +158,8 @@ gele(P):-piece_existante(P), \+voisin_allier(P,_), voisin_ennemi_plus_fort(P),!.
 cases_pieges([[2,2],[2,6],[6,2],[6,6]]).
 tomber(X):-cases_pieges(L), member(X,L), \+voisin_allier(X),!.
 
-deplacement1(X,M1,[M1|L],B):-coup_possible(X,M1), remove(X,B,L).
-deplacement4(X,[M1,M2,M3,M4],NewB,B):- deplacement1(X,M1,L,B), deplacement1(M1,M2,L1,L),deplacement1(M2,M3,L2,L1), deplacement1(M3,M4,NewB,L2).
+%deplacement1(X,M1,[M1|L],B):-coup_possible(X,M1), remove(X,B,L).
+%deplacement4(X,[M1,M2,M3,M4],NewB,B):- deplacement1(X,M1,L,B), deplacement1(M1,M2,L1,L),deplacement1(M2,M3,L2,L1), deplacement1(M3,M4,NewB,L2).
 
 %Est-ce que les pièces sur les pièges disparaissent automatiquement du board ??
 %Comment on accède au board??
@@ -168,16 +168,28 @@ remove([X,Y],B,NewBoard):-delete(B,[X,Y,_,_],NewBoard).
 deplacement(0,_,_).
 deplacement(N,[P1|P],[C1|C]):-N>0, board(Board), coup_possible(Board,P1,C1), updateBoard(P1,C1), M is N-1, deplacement(M,P,C).
 
+move(0,[]).
+move(N,[[X1,Y1]|Q]):-N>0, board(Board), coup_possible(Board,X1,Y1), updateBoard(X1,Y1), M is N-1, move(M,Q).
+%move(N,[[X1,Y1]|Q]):-N>0, board(Board), get_rabbits(silver,Board,B), coup_possible(B,X1,Y1), updateBoard(X1,Y1), M is N-1, move(M,Q).
+
 % default call
 %get_moves([[[1,0],C]], Gamestate, Board) :- asserta(board(Board)), coup_possible([1,0],C).
 get_moves1([[P,C]], Gamestate, Board) :- asserta(board(Board)), coup_possible(Board,P,C).
-get_moves([Old,New],Gamestate,Board):- asserta(board(Board)), deplacement(4,Old,New).
+get_move_qui_marche(Old,New,Gamestate,Board):- asserta(board(Board)), updateBoard(Old,New).
+get_move11(Old,New,Gamestate,Board):- asserta(board(Board)), deplacement(1,[Old],[New]).
+get_moves2(Old,New,Gamestate,Board):- asserta(board(Board)), deplacement(4,Old,New).
+get_moves(Moves,Gamestate,Board):-asserta(board(Board)), move(4,Moves).
+
 
 % predicat to add a new move to the list of moves
-updateBoard(Old,New) :- board(Board), remove(Old,Board,NewBoard), retract(board(Board)), asserta(moves([New|NewBoard])).
+%updateBoard(Old,New) :- board(Board), remove(Old,Board,NewBoard), retract(board(Board)), asserta(board([New|NewBoard])).
+updateBoard([X,Y],[X1,Y1]) :- board(Board), get_piece([X,Y],[X,Y,T,C]), remove([X,Y],Board,NewBoard), retract(board(Board)), asserta(board([[X1,Y1,T,C]|NewBoard])).
+%updateBoard(_,_) :- board(Board).
+test1(UB) :- asserta(board([[0,0,rabbit,silver],[0,1,rabbit,silver],[1,2,horse,silver],[0,3,rabbit,silver],[0,4,elephant,silver],[0,5,rabbit,silver],[0,6,rabbit,silver],[0,7,rabbit,silver],[1,0,camel,silver],[1,1,cat,silver],[2,2,rabbit,silver],[1,3,dog,silver],[1,4,rabbit,silver],[1,5,horse,silver],[1,6,dog,silver],[1,7,cat,silver],[2,7,rabbit,gold],[6,0,cat,gold],[6,1,horse,gold],[6,2,camel,gold],[6,3,elephant,gold],[6,4,rabbit,gold],[6,5,dog,gold],[6,6,rabbit,gold],[7,0,rabbit,gold],[7,1,rabbit,gold],[7,2,rabbit,gold],[7,3,cat,gold],[7,4,dog,gold],[7,5,rabbit,gold],[7,6,horse,gold],[7,7,rabbit,gold]])), 
+updateBoard([6,1],[6,2]), board(UB).
 
-
-
+%piece_existante([X,Y]):-board(B), member([X,Y,_,_],B).
+get_piece([X,Y],[X,Y,T,C]):-board(B), member([X,Y,T,C],B).
 
 
 
