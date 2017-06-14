@@ -110,9 +110,25 @@ tomber(X):-cases_pieges(L), member(X,L), \+voisin_allier(X),!.
 deplacement1(X,M1,[M1|L],B):-coup_possible(X,M1), remove(X,B,L).
 deplacement4(X,[M1,M2,M3,M4],NewB,B):- deplacement1(X,M1,L,B), deplacement1(M1,M2,L1,L),deplacement1(M2,M3,L2,L1), deplacement1(M3,M4,NewB,L2).
 
-
+%Est-ce que les pièces sur les pièges disparaissent automatiquement du board ??
+%Comment on accède au board??
 remove([X,Y],B,NewBoard):-delete(B,[X,Y,_,_],NewBoard).
 %update_board(B,L).
+
+%get_rabbits(Couleur, Board,L) : retourne les lapins d'une couleur dans L 
+get_rabbits(_,[],[]).
+get_rabbits(C,[[X,Y,rabbit,C]|Q],[[X,Y]|L]):-get_rabbits(C,Q,L),!.
+get_rabbits(C,[_|Q],L):- get_rabbits(C,Q,L).
+
+%get_cats(Couleur, Board,L) : retourne les chats d'une couleur dans L 
+get_cats(_,[],[]).
+get_cats(C,[[X,Y,cat,C]|Q],[[X,Y]|L]):-get_cats(C,Q,L),!.
+get_cats(C,[_|Q],L):- get_cats(C,Q,L).
+
+%get_chiens(Couleur, Board,L) : retourne les chiens d'une couleur dans L 
+get_dogs(_,[],[]).
+get_dogs(C,[[X,Y,dog,C]|Q],[[X,Y]|L]):-get_dogs(C,Q,L),!.
+get_dogs(C,[_|Q],L):- get_dogs(C,Q,L).
 
 
 
@@ -124,6 +140,18 @@ concat([T|Q],L,[T|R]):-concat(Q,L,R).
 inter([], _, []).
 inter([H1|T1], L2, [H1|Res]) :- member(H1, L2),inter(T1, L2, Res).
 inter([_|T1], L2, Res) :- inter(T1, L2, Res).
+
+% declare the dynamic fact
+:- dynamic moves/1.
+
+% predicat to add a new move to the list of moves
+add_move(NewMove) :- moves(M), retract(moves(M)), asserta(moves([NewMove|M])).
+
+% init moves with an empty list, add a new move to this list, return the new moves with the added move
+test(M) :- asserta(moves([])), add_move([[1,0],[2,0]]), moves(M).
+
+
+
 
 %IA couleur=silver
 
